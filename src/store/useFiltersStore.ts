@@ -113,18 +113,24 @@ const useFiltersStore = create<FiltersState>((set, get) => ({
     set({ isLoading: true, error: null, currentRestaurant: null });
 
     try {
-      const categories = [...dietaryRestrictions].join(",");
-      const radiusInMeters = Math.min(Math.round(distance * 1609.34), 40000); // Cap at 40km
-
       const searchParams: SearchParams = {
         latitude,
         longitude,
-        radius: radiusInMeters,
-        price: priceRange.join(",") || undefined,
+        radius: Math.min(Math.round(distance * 1609.34), 40000), // Cap at 40km
         rating: minRating > 0 ? minRating : undefined,
-        categories: categories || undefined,
-        transactions: diningOptions.join(",") || undefined,
       };
+
+      if (priceRange.length > 0) {
+        searchParams.price = priceRange.join(",");
+      }
+
+      if (dietaryRestrictions.length > 0) {
+        searchParams.categories = dietaryRestrictions.join(",");
+      }
+
+      if (diningOptions.length > 0) {
+        searchParams.transactions = diningOptions.join(",");
+      }
 
       // First, get the full list to know the total
       const initialResult = await searchRestaurants(searchParams);
