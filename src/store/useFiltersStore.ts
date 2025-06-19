@@ -135,6 +135,17 @@ const useFiltersStore = create<FiltersState>((set, get) => ({
       // First, get the full list to know the total
       const initialResult = await searchRestaurants(searchParams);
 
+      // Defensively check if the API response is valid
+      if (!initialResult || !Array.isArray(initialResult.businesses)) {
+        console.error("Invalid API response received:", initialResult);
+        set({
+          error: "The API returned an unexpected response. Please try again.",
+          isLoading: false,
+          restaurants: [],
+        });
+        return;
+      }
+
       // Apply client-side filtering
       const filteredBusinesses = filterRestaurantsClientSide(
         initialResult.businesses,
