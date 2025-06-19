@@ -20,10 +20,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json(response.data);
   } catch (error: any) {
-    console.error("Yelp API Error:", error.response?.data || error.message);
-    res.status(error.response?.status || 500).json({
-      error: "Failed to fetch data from Yelp API.",
-      details: error.response?.data,
-    });
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
+      res.status(error.response?.status || 500).json({
+        error: "Failed to fetch from Yelp.",
+        details: error.response?.data,
+      });
+    } else {
+      console.error("Generic error:", error);
+      res.status(500).json({
+        error: "An unexpected server error occurred.",
+        details: error.message,
+      });
+    }
   }
 }
